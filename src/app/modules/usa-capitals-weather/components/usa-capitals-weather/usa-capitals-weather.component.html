@@ -1,0 +1,31 @@
+<div class="flex flex-col">
+    <div class="flex flex-row justify-center items-center min-h-[5vh]">
+      <h1>
+          {{ 'title' | translate }}
+      </h1>
+    </div>
+  
+    <div class="grid grid-cols-3 m-4 gap-3">
+      <div class="font-medium justify-end flex flex-row items-baseline pt-1">
+        {{'choose_capital' | translate}}:
+      </div>
+      <div class="col-span-2 grid grid-cols-8">
+          <div class="col-span-5 flex flex-col">
+              <select class="select select-primary select-sm" [formControl]="capitalSeleccionada">
+                  <option [value]="-1" disabled="disabled" selected="selected">
+                      {{ 'select' | translate }}
+                  </option>
+                  <option *ngFor="let capital of capitals" [ngValue]="capital">
+                      {{ capital }}
+                  </option>
+              </select>
+          </div>
+      </div>
+    </div>
+    <div class="flex flex-row justify-center">
+        <button class="btn btn-info"
+            (click)="getData()">
+            {{ 'go' | translate }}
+        </button>
+    </div>
+</div>
