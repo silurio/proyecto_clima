@@ -1,31 +1,193 @@
-<div class="flex flex-col">
-    <div class="flex flex-row justify-center items-center min-h-[5vh]">
-      <h1>
+<div class="flex flex-col mt-4">
+    <div class="flex flex-row justify-center font-bold">
+      <h1 class="text-4xl">
           {{ 'title' | translate }}
       </h1>
     </div>
   
-    <div class="grid grid-cols-3 m-4 gap-3">
-      <div class="font-medium justify-end flex flex-row items-baseline pt-1">
-        {{'choose_capital' | translate}}:
-      </div>
-      <div class="col-span-2 grid grid-cols-8">
-          <div class="col-span-5 flex flex-col">
-              <select class="select select-primary select-sm" [formControl]="capitalSeleccionada">
-                  <option [value]="-1" disabled="disabled" selected="selected">
-                      {{ 'select' | translate }}
-                  </option>
-                  <option *ngFor="let capital of capitals" [ngValue]="capital">
-                      {{ capital }}
-                  </option>
-              </select>
-          </div>
-      </div>
-    </div>
-    <div class="flex flex-row justify-center">
-        <button class="btn btn-info"
-            (click)="getData()">
-            {{ 'go' | translate }}
-        </button>
+    <div class="mx-4 my-4">
+        <div class="grid grid-cols-3 m-4 gap-3">
+            <div class="font-medium md:justify-end sm:justify-center md:col-span-1 sm:col-span-3 flex flex-row items-center">
+                {{'choose_capital' | translate}}:
+            </div>
+            <div class="md:col-span-2 grid grid-cols-8 sm:col-span-3 sm:justify-center gap-x-3">
+                <div class="sm:col-start-2 md:col-start-1 col-span-5 flex flex-col">
+                    <select class="select select-primary select-md" [formControl]="selectedCapital">
+                        <option [value]="-1" disabled="disabled" selected="selected">
+                            {{ 'select' | translate }}
+                        </option>
+                        <option *ngFor="let capital of capitals" [ngValue]="capital">
+                            {{ capital }}
+                        </option>
+                    </select>
+                </div>
+                <div class="flex flex-row">
+                    <button class="btn btn-primary"
+                        (click)="getData()">
+                        {{ 'go' | translate }}
+                    </button>
+                </div>
+            </div>
+            <div *ngIf="selectedCapital.invalid && selectedCapital.touched" 
+                class="col-start-2 col-span-2 grid grid-cols-8">
+                <div class="col-span-5 flex flex-col alert alert-error text-center">
+                    <span>{{ 'selection_error' | translate }}</span>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="errorAPI" class="grid grid-cols-7">
+            <div class="col-start-2 col-span-5 flex flex-col alert alert-error text-center">
+                <span>{{ 'error_api' | translate }}</span>
+            </div>
+        </div>
+        <ng-container *ngIf="showCards">
+            <div class="flex flex-col mt-8 justify-center gap-4">
+                <div class="flex flex-row justify-center">
+                    <div class="card w-3/4 bg-base-100 card-bordered border-primary shadow-xl">
+                        <div class="card-body">
+                            <h2 class="card-title">{{ 'weather' | translate }}</h2>
+                            <div class="grid lg:grid-cols-4 sm:grid-cols-2 gap-3 items-center">
+                                <div class="flex flex-row items-center">
+                                    <i class="material-icons md-48 pr-3 text-secondary">{{ weatherData.icon }}</i>
+                                    <span class="font-bold text-secondary">{{ weatherData.name }}</span>
+                                </div>
+                                <div class="flex flex-row items-center">
+                                    <i class="material-icons md-48 pr-3 text-secondary">thermostat</i>
+                                    <span>
+                                        <div class="font-bold text-secondary">
+                                            {{ 'temp' | translate}}
+                                        </div>
+                                        <div class="font-normal">
+                                            {{ weatherData.temp }}
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="flex flex-row items-center">
+                                    <i class="material-icons md-48 pr-3 text-secondary">thermostat</i>
+                                    <span>
+                                        <div class="font-bold text-secondary">
+                                            {{ 'min_temp' | translate}}
+                                        </div>
+                                        <div class="font-normal">
+                                            {{ weatherData.tempMin }}
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="flex flex-row items-center">
+                                    <i class="material-icons md-48 pr-3 text-secondary">thermostat</i>
+                                    <span>
+                                        <div class="font-bold text-secondary">
+                                            {{ 'max_temp' | translate}}
+                                        </div>
+                                        <div class="font-normal">
+                                            {{ weatherData.tempMax }}
+                                        </div>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-row justify-center">
+                    <div class="card w-3/4 bg-base-100 card-bordered border-primary shadow-xl">
+                        <div class="card-body">
+                            <h2 class="card-title">{{ 'forecast' | translate }}</h2>
+                            <div class="overflow-x-auto">
+                                <div class="flex flex-row items-center gap-3">
+                                    <ng-container *ngFor="let forecast of forecasts">
+                                        <div class="card bg-base-100 my-4 card-bordered border-primary shadow-xl">
+                                            <div class="card-body w-64">
+                                                <div class="flex flex-row items-center">
+                                                    <i class="material-icons md-48 pr-3 text-secondary">watch_later</i>
+                                                    <span>
+                                                        <div class="font-bold text-secondary">
+                                                            {{ 'time' | translate }}
+                                                        </div>
+                                                        <div class="font-normal">
+                                                            {{ forecast.time }}
+                                                        </div>
+                                                    </span>
+                                                </div>
+                                                <div class="flex flex-row items-center">
+                                                    <i class="material-icons md-48 pr-3 text-secondary">thermostat</i>
+                                                    <span>  
+                                                        <div class="font-bold text-secondary">
+                                                            {{ 'temp' | translate }}<br>
+                                                        </div>
+                                                        <div class="font-normal">
+                                                            {{ forecast.temp }}
+                                                        </div>
+                                                        <div>
+                                                            <span class="font-bold text-secondary">
+                                                                {{ 'min' | translate }}:
+                                                            </span>
+                                                            <span class="font-normal">
+                                                                {{ forecast.tempMax }}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <span class="font-bold text-secondary">
+                                                                {{ 'max' | translate }}:
+                                                            </span>
+                                                            <span class="font-normal">
+                                                                {{ forecast.tempMin }}
+                                                            </span>
+                                                        </div>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-row justify-center">
+                    <div class="card w-3/4 bg-base-100 card-bordered border-primary shadow-xl">
+                        <div class="card-body">
+                            <h2 class="card-title">{{ 'air_pollution' | translate }}</h2>
+                            <div class="grid lg:grid-cols-3 sm:grid-cols-2 gap-3 items-center">
+                                <div class="flex flex-row items-center">
+                                    <i class="material-icons md-48 pr-3 text-secondary">
+                                        {{ airPollutionData.icon }}
+                                    </i>
+                                    <span>
+                                        <div class="font-bold text-secondary">
+                                            {{ 'air_quality' | translate }}
+                                        </div>
+                                        <div class="font-normal">
+                                            {{ airPollutionData.airQuality }}
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="flex flex-row items-center">
+                                    <i class="material-icons md-48 pr-3 text-secondary">air</i>
+                                    <span>
+                                        <div class="font-bold text-secondary">
+                                            {{ 'co' | translate}}
+                                        </div>
+                                        <div class="font-normal">
+                                            {{ airPollutionData.co }}<sup>3</sup>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="flex flex-row items-center">
+                                    <i class="material-icons md-48 pr-3 text-secondary">grain</i>
+                                    <span>
+                                        <div class="font-bold text-secondary">
+                                            {{ 'fpm' | translate}}
+                                        </div>
+                                        <div class="font-normal">
+                                            {{ airPollutionData.fineParticles }}<sup>3</sup>
+                                        </div>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
     </div>
 </div>
