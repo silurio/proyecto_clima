@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormControl, ValidationErrors, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { forkJoin } from 'rxjs';
 import { AirQualityIcons, AirQualityIndex } from 'src/app/shared/model/enum/air-quality';
 import { StateCapitals } from 'src/app/shared/model/enum/state-capitals';
 import { WeatherService } from 'src/app/shared/services/weather.service';
 import { ModalComponent } from '../modal/modal.component';
-import { MatDialog } from '@angular/material/dialog';
-import { RouterService } from 'src/app/shared/services/router.service';
 
 type WeatherCodes = {
   thunderstorm: number[];
@@ -72,68 +71,73 @@ export class UsaCapitalsWeatherComponent implements OnInit {
     errorAPI = false;
     constructor(
       private matDialog: MatDialog,
-      private routerService: RouterService,
       private weatherService: WeatherService
     ) {
     }
 
     ngOnInit(): void {
-      // this.selectedCapital.valueChanges.subscribe(value => console.log(value));
       this.capitals = Object.values(StateCapitals).sort((a, b) => a.localeCompare(b));
     }
 
     getData(): void {
       if(this.selectedCapital.valid){
         this.matDialog.open(ModalComponent);
-        forkJoin<any[]>([
-          this.weatherService.getForecast(this.selectedCapital.value as string),
-          this.weatherService.getWeather(this.selectedCapital.value as string)
-        ]).subscribe({
-          next: (values: any[]) => {
-            const latitude = values[0].city.coord.lat;
-            const longitude = values[0].city.coord.lon;
-
-            this.weatherData.name = values[1].weather[0].main;
-            this.weatherData.temp = this.transformToCelcius(values[1].main.temp);
-            this.weatherData.tempMin = this.transformToCelcius(values[1].main.temp_min);
-            this.weatherData.tempMax = this.transformToCelcius(values[1].main.temp_max);
-
-            Object.keys(this.weather).some((key: string) => {
-              if (this.weather[key as keyof WeatherCodes].some((element: number) => element === values[1].weather[0].id)) {
-                this.weatherData.icon = key;
-                return true;
-              }
-              return false;
-            });
-
-            const temporalForecast = values[0].list.map((temp: any) => temp.main)
-              .map(({feels_like, grnd_level, humidity, pressure, sea_level, temp_kf, ...rest}: any) => rest);
-            const timeArray = values[0].list.map((temp: any) => temp.dt_txt);
-            temporalForecast.forEach((element: any, index: number) => {
-              this.forecasts.push({
-                time: timeArray[index],
-                temp: this.transformToCelcius(element.temp),
-                tempMax: this.transformToCelcius(element.temp_max),
-                tempMin: this.transformToCelcius(element.temp_min)
+        const forecast$ = this.weatherService.getForecast(this.selectedCapital.value as string);
+        const weather$ = this.weatherService.getWeather(this.selectedCapital.value as string);
+        
+        if(forecast$ && weather$) {
+          forkJoin<any[]>([forecast$, weather$]).subscribe({
+            next: (values: any[]) => {
+              const latitude = values[0].city.coord.lat.toString();
+              const longitude = values[0].city.coord.lon.toString();
+              console.log(latitude, longitude);
+              this.weatherData.name = values[1].weather[0].main;
+              this.weatherData.temp = this.transformToCelcius(values[1].main.temp);
+              this.weatherData.tempMin = this.transformToCelcius(values[1].main.temp_min);
+              this.weatherData.tempMax = this.transformToCelcius(values[1].main.temp_max);
+  
+              Object.keys(this.weather).some((key: string) => {
+                if (this.weather[key as keyof WeatherCodes].some((element: number) => element === values[1].weather[0].id)) {
+                  this.weatherData.icon = key;
+                  return true;
+                }
+                return false;
               });
-            });
-
-            this.getAirPollutionData(latitude, longitude)
-          },
-          error: (error) => {
-            this.matDialog.closeAll();
-            this.errorAPI = true;
-            console.error(error);
-          }
-        });
+  
+              this.forecasts = [];
+              const temporalForecast = values[0].list.map((temp: any) => temp.main)
+                .map(({feels_like, grnd_level, humidity, pressure, sea_level, temp_kf, ...rest}: any) => rest);
+              const timeArray = values[0].list.map((temp: any) => temp.dt_txt);
+              temporalForecast.forEach((element: any, index: number) => {
+                this.forecasts.push({
+                  time: timeArray[index],
+                  temp: this.transformToCelcius(element.temp),
+                  tempMax: this.transformToCelcius(element.temp_max),
+                  tempMin: this.transformToCelcius(element.temp_min)
+                });
+              });
+  
+              this.getAirPollutionData(latitude, longitude)
+            },
+            error: (error) => {
+              this.matDialog.closeAll();
+              this.errorAPI = true;
+              console.error(error);
+            }
+          });
+        } else {
+          this.matDialog.closeAll();
+          this.errorAPI = true;
+          console.error('Forecast or weather method returned undefined or null');
+        }
       }
     }
 
-    private transformToCelcius(temperature: number): string {
+    transformToCelcius(temperature: number): string {
       return (temperature + this.toCelcius).toFixed(2) + '°C';
     }
 
-    private airQualityOption(isIcon: boolean, index: number): string {
+    airQualityOption(isIcon: boolean, index: number): string {
       let selectedKey = ''; 
       Object.entries((isIcon ? AirQualityIcons : AirQualityIndex)).some(([key, value]) => {
         if(value === index){
@@ -145,29 +149,33 @@ export class UsaCapitalsWeatherComponent implements OnInit {
       return selectedKey;
     }
 
-    private getAirPollutionData(latitude: string, longitude: string): void {
-      this.weatherService.getAirPollution(latitude, longitude)
-      .subscribe({
-        next: (data) => {
-          this.airPollutionData.icon = this.airQualityOption(true, data.list[0].main.aqi);
-          this.airPollutionData.airQuality = this.airQualityOption(false, data.list[0].main.aqi);
-          this.airPollutionData.co = data.list[0].components.co + ' ' + 'μg/m';
-          this.airPollutionData.fineParticles = data.list[0].components.pm2_5 + ' ' + 'μg/m';
-          
-          this.showCards = true;
-          this.matDialog.closeAll();
-        },
-        error: (error) => {
-          this.matDialog.closeAll();
-          this.errorAPI = true;
-          console.error(error);
-        }
-      });
+    getAirPollutionData(latitude: string, longitude: string): void {
+      const airPollution$ = this.weatherService.getAirPollution(latitude, longitude);
+      if(airPollution$){
+        airPollution$.subscribe({
+          next: (data) => {
+            this.airPollutionData.icon = this.airQualityOption(true, data.list[0].main.aqi);
+            this.airPollutionData.airQuality = this.airQualityOption(false, data.list[0].main.aqi);
+            this.airPollutionData.co = data.list[0].components.co + ' ' + 'μg/m';
+            this.airPollutionData.fineParticles = data.list[0].components.pm2_5 + ' ' + 'μg/m';
+            console.log(data);
+            this.showCards = true;
+            this.matDialog.closeAll();
+          },
+          error: (error) => {
+            this.matDialog.closeAll();
+            this.errorAPI = true;
+            console.error(error);
+          }
+        });
+      } else {
+        this.matDialog.closeAll();
+        this.errorAPI = true;
+        console.error('Air pollution method returned undefined or null');
+      }
     }
 
-    private validSelection(control: AbstractControl): ValidationErrors | null {
+    validSelection(control: AbstractControl): ValidationErrors | null {
       return control.value <= 0 && control.value !== null ? {errorValue: true} : null;
     }
-
-
 }
