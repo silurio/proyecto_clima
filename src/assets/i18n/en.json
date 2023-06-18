@@ -18,5 +18,8 @@
     "finish": "This activity could take some minutes to finish",
     "not_close": "Please, do not close the browser",
     "selection_error": "Please select a state capital",
-    "error_api": "Unfortunately, we were unable to complete your request. Please, try again"
+    "error_api": "Unfortunately, we were unable to complete your request. Please, try again",
+    "title_home": "Welcome",
+    "usa_capitals_page": "Weather, forecast and air pollution section",
+    "return": "Return"
 }

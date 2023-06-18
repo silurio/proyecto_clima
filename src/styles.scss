@@ -16,7 +16,11 @@
 mat-dialog-container{
     padding: 0 0 24px 0 !important;
     overflow-x: hidden !important;
+    border-radius: 20px !important;
+    border-color: #641ae6 !important;
+    border-width: 3px;
 }
+
 mat-dialog-content {
     margin: inherit !important;
 }

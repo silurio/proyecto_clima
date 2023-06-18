@@ -6,6 +6,7 @@ import { StateCapitals } from 'src/app/shared/model/enum/state-capitals';
 import { WeatherService } from 'src/app/shared/services/weather.service';
 import { ModalComponent } from '../modal/modal.component';
 import { MatDialog } from '@angular/material/dialog';
+import { RouterService } from 'src/app/shared/services/router.service';
 
 type WeatherCodes = {
   thunderstorm: number[];
@@ -71,6 +72,7 @@ export class UsaCapitalsWeatherComponent implements OnInit {
     errorAPI = false;
     constructor(
       private matDialog: MatDialog,
+      private routerService: RouterService,
       private weatherService: WeatherService
     ) {
     }
