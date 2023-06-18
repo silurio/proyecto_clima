@@ -9,6 +9,7 @@ import { ModalComponent } from './components/modal/modal.component';
 import { UsaCapitalsWeatherComponent } from './components/usa-capitals-weather/usa-capitals-weather.component';
 import { UsaCapitalsWeatherRoutingModule } from './usa-capitals-weather-routing.module';
 import { OverlayModule } from '@angular/cdk/overlay';
+import { SharedModule } from 'src/app/shared/module/shared.module';
 
 
 @NgModule({
@@ -18,12 +19,13 @@ import { OverlayModule } from '@angular/cdk/overlay';
   ],
   imports: [
     CommonModule,
-    ReactiveFormsModule,
-    TranslateModule,
-    OverlayModule,
-    UsaCapitalsWeatherRoutingModule,
-    MatProgressSpinnerModule,
-    MatDialogModule
+    // TranslateModule,
+    // ReactiveFormsModule,
+    // OverlayModule,
+    // MatProgressSpinnerModule,
+    // MatDialogModule,
+    SharedModule,
+    UsaCapitalsWeatherRoutingModule
   ]
 })
 export class UsaCapitalsWeatherModule { }
