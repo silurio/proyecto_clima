@@ -91,6 +91,7 @@ export class UsaCapitalsWeatherComponent implements OnInit {
      * At the end method to recover the air pollution data is called
      */
     getData(): void {
+      this.selectedCapital.markAllAsTouched();
       if(this.selectedCapital.valid){
         this.matDialog.open(ModalComponent);
         const forecast$ = this.weatherService.getForecast(this.selectedCapital.value as string);
