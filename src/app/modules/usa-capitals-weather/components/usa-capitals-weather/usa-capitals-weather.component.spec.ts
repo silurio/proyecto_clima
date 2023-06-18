@@ -58,7 +58,9 @@ describe('UsaCapitalsWeatherComponent', () => {
     });
 
     it('should populate the component data with the fetched values', () => {
-      const forecastData = { city: { coord: { lat: 0, lon: 0 } }, list: [] };
+      const forecastData = { city: { coord: { lat: 0, lon: 0 } }, list: [{ main: {
+        feels_like: 287.85, grnd_level: 986, humidity: 87, pressure: 1009, sea_level: 1009, temp: 288.11, temp_kf: -0.24, temp_max: 288.35, temp_min: 288.11
+      }, dt_txt: "2023-06-18 12:00:00" }] };
       const weatherData = { weather: [{ main: 'Sunny' }], main: { temp: 300, temp_min: 295, temp_max: 305 } };
 
       weatherServiceMock.getForecast.and.returnValue(of(forecastData));
@@ -70,7 +72,10 @@ describe('UsaCapitalsWeatherComponent', () => {
       expect(component.weatherData.temp).toBe('26.85°C');
       expect(component.weatherData.tempMin).toBe('21.85°C');
       expect(component.weatherData.tempMax).toBe('31.85°C');
-      // TODO: Rest of assertions
+      expect(component.forecasts[0].time).toBe('2023-06-18 12:00:00');
+      expect(component.forecasts[0].temp).toBe('14.96°C');
+      expect(component.forecasts[0].tempMax).toBe('15.20°C');
+      expect(component.forecasts[0].tempMin).toBe('14.96°C');
     });
 
     it('should fetch air pollution data and populate the component data', () => {
