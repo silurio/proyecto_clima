@@ -1,4 +1,26 @@
+@import '~material-icons/iconfont/material-icons.css';
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+
+
+.material-icons.md-18 { font-size: 18px; }
+.material-icons.md-24 { font-size: 24px; }
+.material-icons.md-36 { font-size: 36px; }
+.material-icons.md-48 { font-size: 48px; }
+.material-icons.md-96 { font-size: 96px; }
+
 /* You can add global styles to this file, and also import other style files */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+mat-dialog-container{
+    padding: 0 0 24px 0 !important;
+    overflow-x: hidden !important;
+    border-radius: 20px !important;
+    border-color: #641ae6 !important;
+    border-width: 3px;
+}
+
+mat-dialog-content {
+    margin: inherit !important;
+}
