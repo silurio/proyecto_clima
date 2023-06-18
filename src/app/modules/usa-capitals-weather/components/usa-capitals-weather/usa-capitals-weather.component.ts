@@ -79,6 +79,17 @@ export class UsaCapitalsWeatherComponent implements OnInit {
       this.capitals = Object.values(StateCapitals).sort((a, b) => a.localeCompare(b));
     }
 
+    /**
+     * Get the data related to the weather, the forecast and the air pollution.
+     * At first get the data of the weather and forecast, then it extracts the
+     * latitude and longitude from the forecast data in order to get the air
+     * pollution data. In regard to the weather data, the name, icon code and
+     * temperatures are recover. The temperatures were previously transform to 
+     * Celcius.
+     * In regard to the forecast, the time and temperatures (also transformed 
+     * to Celcius) data are recovered and assigned to forecast array.
+     * At the end method to recover the air pollution data is called
+     */
     getData(): void {
       if(this.selectedCapital.valid){
         this.matDialog.open(ModalComponent);
@@ -90,7 +101,7 @@ export class UsaCapitalsWeatherComponent implements OnInit {
             next: (values: any[]) => {
               const latitude = values[0].city.coord.lat.toString();
               const longitude = values[0].city.coord.lon.toString();
-              console.log(latitude, longitude);
+
               this.weatherData.name = values[1].weather[0].main;
               this.weatherData.temp = this.transformToCelcius(values[1].main.temp);
               this.weatherData.tempMin = this.transformToCelcius(values[1].main.temp_min);
@@ -133,10 +144,23 @@ export class UsaCapitalsWeatherComponent implements OnInit {
       }
     }
 
+    /**
+     * Tranform the temperatures from Kelvin to Celcius
+     * @param temperature refers to the temperature to transform
+     * @returns a string with the temperature in Celcius and with 
+     * the corresponding symbol
+     */
     transformToCelcius(temperature: number): string {
       return (temperature + this.toCelcius).toFixed(2) + '°C';
     }
 
+    /**
+     * Get the air quality icon code or the corresponding air quality 
+     * index value 
+     * @param isIcon if the method would get the icon code or index value
+     * @param index refers to the air quality index 
+     * @returns the air quality icon code or its index value
+     */
     airQualityOption(isIcon: boolean, index: number): string {
       let selectedKey = ''; 
       Object.entries((isIcon ? AirQualityIcons : AirQualityIndex)).some(([key, value]) => {
@@ -149,6 +173,11 @@ export class UsaCapitalsWeatherComponent implements OnInit {
       return selectedKey;
     }
 
+    /**
+     * Get and process the air pollution data 
+     * @param latitude
+     * @param longitude 
+     */
     getAirPollutionData(latitude: string, longitude: string): void {
       const airPollution$ = this.weatherService.getAirPollution(latitude, longitude);
       if(airPollution$){
@@ -158,7 +187,7 @@ export class UsaCapitalsWeatherComponent implements OnInit {
             this.airPollutionData.airQuality = this.airQualityOption(false, data.list[0].main.aqi);
             this.airPollutionData.co = data.list[0].components.co + ' ' + 'μg/m';
             this.airPollutionData.fineParticles = data.list[0].components.pm2_5 + ' ' + 'μg/m';
-            console.log(data);
+
             this.showCards = true;
             this.matDialog.closeAll();
           },
@@ -175,6 +204,11 @@ export class UsaCapitalsWeatherComponent implements OnInit {
       }
     }
 
+    /**
+     * Validate the US capital selection form. 
+     * @param control the form control 
+     * @returns If all is Ok returns null, otherwise an error is returned
+     */
     validSelection(control: AbstractControl): ValidationErrors | null {
       return control.value <= 0 && control.value !== null ? {errorValue: true} : null;
     }
